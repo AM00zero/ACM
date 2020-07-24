@@ -96,6 +96,113 @@ int main()
 ```
 
 
+#牛客3场 _g题  并查集+链表
+
+给一张图n点m边，一开始每个点颜色不同，共n种颜色。
+
+后接q次染色操作，每次给出一个点（给出一种颜色），如果该点（集合）颜色没被改变过，由该点（集合）出发把与其相连的点（集合）染成相同颜色，求q次操作后结果。**开始时当然按点理解，当开始合并后，两个集合相遇是要把整个集合都染色的。**
+
+难点在于对每个点都维护一个链表，存储i号颜色集合里**尚未对周围染色的点**。对于每次操作的节点u，如果该点已被染色（find(x)!=x）则跳过。否则遍历u的链表，从链表中节点t开始bfs（这一步看作是让颜色u**集合中每个点都尝试向外染色**），对于与t相连的v点，如果v还未被染色，用并查集合并进u的集合，再把v的链表拼接到u下，这样下次再对颜色u操作时，就可以**从原本颜色v的点开始**向外染色了。
+
+```
+#include<bits/stdc++.h>
+using namespace std;
+#define ms(x,y) memset(x,y,sizeof(x))
+#define pii pair<int,int>
+
+#define bug(x) cout<<"x"<<endl
+typedef long long ll ;
+const int mxn =  8e5+20;
+const int  inf = 0x3f3f3f3f;
+int n,m,x,y,z;
+int f[mxn];
+bool vis[mxn];
+vector<int> g[mxn];
+list<int> lis[mxn];
+inline int read()
+{
+    int x=0,f=1;char c=getchar();
+    while(c<'0'||c>'9'){if(c=='-') f=-1;c=getchar();}
+    while(c>='0'&&c<='9') x=(x<<3)+(x<<1)+(c^48),c=getchar();
+    return x*f;
+}
+void init()
+{
+	for(int i = 0;i<=n+1;i++)
+	{
+		vis[i]=false;
+		f[i]=i;
+		g[i].clear();
+		lis[i].clear();
+		lis[i].push_back(i); 
+	}
+}
+
+int find(int x)
+{
+	return f[x] == x ? x : f[x] = find(f[x]);
+}
+void unit(int x,int y)
+{
+	int xx = find(x),yy=find(y);
+	if(xx != yy)
+	{
+		f[xx] =yy;
+		lis[yy].splice(lis[yy].end(),lis[xx]);//把yy链表接到xx后面 
+	}
+}
+void bfs(int u)
+{
+	vis[u]=1; 
+	if(find(u)!=u)return ;
+	int sz = lis[u].size();
+	for(int i = 0;i<sz;i++)
+	{
+		int idx = lis[u].front();//遍历链表方式
+		for(int j=0;j<g[idx].size();j++)
+		{
+			int v = g[idx][j];
+			unit(v,u);
+			if(vis[v])continue;
+			
+			lis[u].push_back(v); vis[v] = true;
+		}
+		lis[u].pop_front();//遍历链表方式 
+	}
+}
+int main()
+{
+	int T,q;cin>>T;
+	while(T--)
+	{
+		cin>>n>>m;
+	
+		init();
+		for(int i = 1;i<=m;i++)
+		{
+			cin>>x>>y;
+			g[x].push_back(y);
+			g[y].push_back(x);
+		}
+		cin>>q;
+		while(q--)
+		{
+			cin>>x;
+			bfs(x);
+		}
+		for(int i = 0;i<n-1;i++)
+		{
+			int ans = find(i);
+			printf("%d ",ans);
+		}
+		printf("%d\n",find(n-1));
+	}
+	return 0;
+}
+```
+
+
+
 
 
 
