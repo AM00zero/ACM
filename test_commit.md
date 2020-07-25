@@ -1,10 +1,10 @@
-##多校补题_from_lsr
+#多校补题_from_lsr
 
-#杭电2场1001__Total Eclipse
+##杭电2场1001__ 并查集 [Total Eclipse\] 
 
 给一张图n点m边，每个点有一个权值，每次操作都是：找k个处于同一连通块的点，令他们权值减一，（k尽可能大）问最少要多少次操作能让全部点权值清零。
 
-每次都是找最大的连通分量，减到割点权值清零，连通分量分裂后，重复上述步骤。
+每次都是找最大的连通分量，减到割点权值清零，连通分量分裂后，，重复上述步骤。
 
 题解的思路是倒过来想，越靠后被清零的必定是权值越大的点，按权值**从小到大删点**  反过来就是按权值**从大到小合并**。假设对于这张图
 
@@ -12,7 +12,7 @@
 
 顺着题目思路就是先val[u]次操作使u权值清零，再分别val [v<sub>i</sub>]-val[u]次操作结束，共计val[u]+val[v1]+val[v2]+val[v3]-3*val[u]次。
 
-关于合并：每次遍历到点u连接的子节点v时，如果val[v] < val[u] (或val[v] == vla[u] && v<u)，则可以将两点合并，权值小的在上，权值相同时编号小的在上，这样按题目流程，先删除的就是权值较小的(连通分量内的)根节点。
+关于合并：每次遍历到点u连接的子节点v时，如果val[v] < val[u] (或val[v] == vla[u] && v<u)，则可以将两点合并，权值小的在上，权值相同时编号小的在上，这样按题目流程，先删除的就是权值较小的根节点。
 
 关于结果：按代码里的流程，按权值从大到小每遍历到一个点u，就先加一次他的权值val[u]，当uv合并时再减一次val[u]，因为每个v点**单独需要的次数里**都有一项-val[u]
 
@@ -96,7 +96,7 @@ int main()
 ```
 
 
-#牛客3场 _g题  并查集+链表
+##牛客3场 _g题  并查集+链表
 
 给一张图n点m边，一开始每个点颜色不同，共n种颜色。
 
@@ -201,8 +201,53 @@ int main()
 }
 ```
 
+## 牛客二场_F  gcd+二维单调队列
 
+给一个nxm矩阵，A[i] [j] = lcm(i,j)，求最大kxk大小的子区间和。补题正好复习下二维单调队列，需要注意正常遍历得出A数组会超时。
 
+```
+#include <bits/stdc++.h>
+#define fi first
+#define se second
+#define pii pair<int,int>
+#define ll long long
+using namespace std;
+const int maxn=5005;
+int a[maxn][maxn];
+void init(int n,int m){
+    for(int i=1;i<=n;++i)
+        for(int j=1;j<=m;++j)
+            if(!a[i][j])
+                for(int k=1;k*i<=n&&k*j<=m;++k)
+                    a[i*k][j*k]=i*j*k;
+}
+int ma[maxn][maxn];
 
-
+int main(){
+    int n,m,k;cin>>n>>m>>k;
+    init(n,m);
+	//fi是权值，se是编号/顺序 
+    for(int j=1;j<=m;++j){
+        deque<pii> q;
+        for(int i=1;i<=n;++i){
+            while(!q.empty()&&(q.front().fi<a[i][j]||i-q.front().se+1>k)) q.pop_front();
+            while(!q.empty()&&q.back().fi<a[i][j]) q.pop_back();
+            q.push_back({a[i][j],i});
+            ma[i][j]=q.front().fi;
+        }
+    }
+    ll ans=0;
+    for(int i=k;i<=n;++i){
+        deque<pii> q;
+        for(int j=1;j<=m;++j){
+            while(!q.empty()&&(q.front().fi<ma[i][j]||j-q.front().se+1>k)) q.pop_front();
+            while(!q.empty()&&q.back().fi<ma[i][j]) q.pop_back();
+            q.push_back({ma[i][j],j});
+            if(j>=k)
+            ans+=q.front().fi;
+        }
+    }
+    cout<<ans<<endl;
+}
+```
 
