@@ -1,6 +1,8 @@
-# 多校补题_from_lsr
+#多校补题_from_lsr
 
-## 杭电2场1001__ 并查集 [Total Eclipse\] 
+##杭电2场1001__ 并查集 [Total Eclipse\] 
+
+http://acm.hdu.edu.cn/showproblem.php?pid=6763
 
 给一张图n点m边，每个点有一个权值，每次操作都是：找k个处于同一连通块的点，令他们权值减一，（k尽可能大）问最少要多少次操作能让全部点权值清零。
 
@@ -96,7 +98,9 @@ int main()
 ```
 
 
-## 牛客3场 _g题  并查集+链表
+##牛客3场 _g题  并查集+链表
+
+https://ac.nowcoder.com/acm/contest/5668/G
 
 给一张图n点m边，一开始每个点颜色不同，共n种颜色。
 
@@ -201,7 +205,9 @@ int main()
 }
 ```
 
-## 牛客二场_F  二维单调队列
+## 牛客二场_F  gcd+二维单调队列
+
+https://ac.nowcoder.com/acm/contest/5667/F
 
 给一个nxm矩阵，A[i] [j] = lcm(i,j)，求最大kxk大小的子区间和。补题正好复习下二维单调队列，需要注意正常遍历得出A数组会超时。
 
@@ -248,6 +254,112 @@ int main(){
         }
     }
     cout<<ans<<endl;
+}
+```
+
+## 牛客5_B 完全图的mst
+
+https://ac.nowcoder.com/acm/contest/5670/B
+
+是道没学过的板子题。。这几天学学trie树，板子理解还不是很清楚，姑且先把能想通的内容写下来，以后有新想法再补。
+
+可以看作给一张完全图求最小生成树，点权与边权的关系是 边权 = val[a] ^ val[b]，dis[i]定义为0点到i点边权的异或和，这样以来连接两点间的异或和就是dis[a]^dis[b]，把每一项dis插入trie树，**左0右1**，从树顶对trie树dfs，相当于从低位向高位遍历所有dis值，要求mst，则高位0应该尽可能多，尽可能确保走的是同一侧（异或相同为0）就可以做到。每次find返回值理解为连通两侧子树集合所需的最小权值。
+
+```
+#include<cstdio>
+#include<cstring>
+int dis[200001],n;
+int node[6000060],dep[6000060];
+int son[6000060][2],num,mul[30];
+long long ans=0;
+int tot=0,head[100005];
+struct edge
+{
+    int v,nxt,w;
+}e[200005];
+void add(int a,int b,int c)
+{
+    tot++;
+    e[tot].v=b;
+    e[tot].w=c;
+    e[tot].nxt=head[a];
+    head[a]=tot;
+}
+long long min(long long a,long long b)
+{
+    return a<b?a:b;
+}
+void clear()
+{
+    memset(node,0,sizeof(0));
+    memset(son,0,sizeof(0));
+    memset(dep,0,sizeof(dep));
+    num=1;
+    node[1]=1;
+}
+long long find(int x,int y)
+{
+	
+    if (dep[x]==30) return dis[node[x]]^dis[node[y]];
+    bool flag=0;
+    long long ret=2e9;
+    //先考虑同一侧能否合并，异或是同一bit位上相同为0
+	//这样能确保从x位开始到最高位有尽可能多的零 
+    for (int i=0;i<=1;i++) if (son[x][i]&&son[y][i]) ret=min(ret,find(son[x][i],son[y][i])),flag=1;
+    if (flag==0)
+    {
+        if (son[x][0]&&son[y][1]) ret=min(ret,find(son[x][0],son[y][1]));
+		else if (son[x][1]&&son[y][0])ret=min(ret,find(son[x][1],son[y][0]));
+    }
+    return ret;
+}
+void dfs(int x)
+{
+    if (x==0) return;
+    for (int i=0;i<=1;i++) dfs(son[x][i]);
+    if (son[x][0]&&son[x][1]) ans+=find(son[x][0],son[x][1]);
+}
+void insert(int k)//把每一个点的dis插入trie树 
+{
+    int x=1;
+    for (int i=29;i>=0;i--)
+    {
+        int p=1<<i;
+        bool tmp=p&dis[k];//编号0点-k点路径异或和，如果第i位为0进入左子树 
+        if (son[x][tmp]==0) son[x][tmp]=++num,dep[num]=29-i+1,node[num]=n+1;
+        x=son[x][tmp];
+    }
+    node[x]=k;
+}
+void get(int x,int fa)
+{
+    for (int i=head[x];i;i=e[i].nxt) if (e[i].v!=fa)
+    {
+        dis[e[i].v]=dis[x]^e[i].w;
+        get(e[i].v,x);
+    }
+}
+int main()
+{
+    clear();
+    mul[0]=1;
+    for (int i=1;i<=29;i++) mul[i]=mul[i-1]<<1;
+    scanf("%d",&n);
+    for (int i=1;i<n;i++)
+    {
+        int a,b;
+        long long c;
+        scanf("%d%d%d",&a,&b,&c);
+        a++;
+        b++;
+        add(a,b,c);
+        add(b,a,c);
+    }
+    dis[1]=0;
+    get(1,0);
+    for (int i=1;i<=n;i++) insert(i);
+    dfs(1);
+    printf("%lld",ans);
 }
 ```
 
