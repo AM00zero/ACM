@@ -363,3 +363,138 @@ int main()
 }
 ```
 
+##牛客5_D  LIS
+
+给一个数组，操作1是把第n-1个数放在第一个，操作2是把第一个数放在最后，把数组看作环，则操作2只是转动了环，操作1则是对调第n和第n-1项。
+
+操作2不计数，连续多次操作1只算做一次（分析样例才看出来了。。），求要多少次操作1后才能使数组整体有序（小到大）。
+
+读懂题就很好想，把最长上升子序列求出来，剩下的数各需要一次操作1即可。
+
+```
+#include <bits/stdc++.h>
+
+using namespace std;
+const int mxn=505;
+int a[mxn],tmp[mxn];
+int main()
+{
+    int n,ans=-1;
+    scanf("%d",&n);
+    for(int i=1;i<=n;i++)scanf("%d",a+i);
+        
+    for(int i=1;i<=n;i++)
+    {
+        int cnt=1,ct=1;
+        tmp[ct]=a[i];//枚举起点求环里的LIS 
+        while(++cnt<=n)
+        {
+            int t=(i+cnt-1);
+            if(t>n)t%=n;
+            if(tmp[ct]<=a[t]) tmp[++ct]=a[t];
+            else
+            {
+                int x=lower_bound(tmp+1,tmp+1+ct,a[t])-tmp;
+                tmp[x]=a[t];
+            }
+        }
+        ans=max(ans,ct);
+    }
+    printf("%d\n",n-ans);
+    return 0;
+}
+```
+
+## 牛客5_E 大数
+
+给出一个序列b，原数组a按序列改变顺序，比如b[5]是 2 ，那么a[2] 就移动到第5位，求对于这个序列，移动几次能使a有序。
+
+举例能发现每个值的移动范围是一个环（不一定遍历整个范围），求每个值需要次数的最小公倍数即答案。
+
+```
+def gcd(a, b):
+    if a % b == 0:
+        return b
+    else:
+        return gcd(b, a % b)
+n=int(input())
+a=[0]+list(map(int,input().split()))
+vis=[0]*(n+5)
+ans=1
+for i in range(1,n+1):
+    t=i;cnt=0
+    while vis[a[t]] != 1:
+        vis[a[t]] = 1
+        t=a[t]
+        cnt=cnt+1
+    if(cnt!=0):
+        ans = ans * cnt // gcd(ans,cnt)#这里求的是最小公倍数
+print(ans)
+
+```
+
+
+
+## 签到题记录
+
+### 19牛客1_F  计算几何（？求期望
+
+参考了https://blog.csdn.net/weixin_43350051/article/details/97139683
+
+多组输入三角形各个顶点坐标p1,p2,p3，在三角形中任取一点p，计算 期望E=max(S(p,p1,p2),max(S(p,p1,p3),S(p,p2,p3)));
+
+写一个储存坐标系的模板，用向量叉乘的方式能通过三点坐标确定三角形面积
+
+![akHi1P.jpg](https://s1.ax1x.com/2020/07/28/akHi1P.jpg)
+
+```
+随机数找三角形中的点，平均求期望
+#include<bits/stdc++.h>
+using namespace std;
+struct point{
+    double x;
+    double y;
+};
+double S(point p1,point p2,point p3) ///向量叉乘求三角形面积可以看上面链接
+{
+    return fabs((p1.x-p3.x)*(p1.y-p2.y)-(p1.x-p2.x)*(p1.y-p3.y));
+}
+ 
+bool judge(point p,point p1,point p2,point p3) ///判断生成的随机点是不是在三角中 原理是：三个 
+                                         ///小三角形面积之和是不是等于原来大的三角形面积
+{
+    if(S(p1,p2,p3)==(S(p1,p2,p)+S(p,p1,p3)+S(p2,p3,p))){
+    
+        return true;
+    }
+    return false;
+}
+int main()
+{
+    double x1,x2,x3,y1,y2,y3;
+    while(~scanf("%lf%lf%lf%lf%lf%lf",&x1,&y1,&x2,&y2,&x3,&y3)){
+        double cnt=0;
+        struct point p1,p2,p3,p;
+        p1.x=x1,p1.y=y1;
+        p2.x=x2,p2.y=y2;
+        p3.x=x3,p3.y=y3;
+        srand(time(0));
+        double sum=0;
+        for(int i=0;i<100000000;i++){
+            int x=rand();
+            int y=rand();
+            p.x=x*1.0,p.y=y*1.0;
+            if(judge(p,p1,p2,p3)){
+                cnt++;
+                sum+=(max(S(p1,p2,p),max(S(p,p1,p3),S(p2,p3,p))));
+            }
+            //printf("%.3lf\n",sum);
+        }
+        double S1=S(p1,p2,p3);
+        double q=((sum/cnt)*36.0)/S1;
+        printf("%.3lf\n",q);
+    }
+    return 0;
+}
+```
+
