@@ -433,6 +433,142 @@ print(ans)
 
 ```
 
+## 牛客7_B gcd思维
+
+给nxm个口罩，要求分成尽可能少的份数，且能均分给n或m个医院
+
+先看分给n个医院的方案，此时n个医院各需要共计m口罩，确保n>m，然后先分出(n/m)份每份m个口罩，这样还剩n%m个医院各需要共计m个口罩，此时转化为子问题，递归解决。
+
+```
+#include<bits/stdc++.h>
+using namespace std;
+vector<int>v;
+void _gcd(int n,int m)
+{
+	if(n<m)swap(n,m);
+	if(m==0)return ;
+	int t = (n/m)*m;
+	while(t--)v.push_back(m);
+	_gcd(n%m,m);
+}
+
+int main()
+{
+	int T,n,m;
+	cin>>T;
+	while(T--)
+	{
+		v.clear(); 
+		scanf("%d%d",&n,&m);
+		_gcd(n,m);
+        printf("%d\n",v.size());
+		for(int i=0;i<v.size()-1;i++)printf("%d ",v[i]);
+		printf("%d\n",v[v.size()-1]);
+	}
+	return 0;
+ } 
+```
+
+## 牛客7_H 整除分块
+
+给出参数n,k，(1,k)符合条件，当(n,k)符合时(n+k,k)和(nk,k)也符合，问有多少种符合条件的组合。
+
+由1+ i  *  k <= N && i * k<=N可知结果公式![awnlad.png](https://s1.ax1x.com/2020/08/04/awnlad.png)
+
+```
+#include <bits/stdc++.h>
+typedef long long ll;
+using namespace std;
+const ll mod=1e9+7;
+
+  
+ll solve(ll n,ll k)
+{
+    ll i, j,ans = 0;
+    for(i = 2; i <= n && i <= k; i = j+1)
+	{
+        j = min(n/(n/i), k);
+        ans =(ans + (j-i+1)%mod*(n/i)%mod) %mod;
+    }
+    return ans ;
+}
+  
+int main()
+{
+	ll n,k,ans;
+    scanf("%lld%lld", &n, &k);
+    ans = (solve(n,k)+solve(n-1,k)) %mod;
+    printf("%lld\n", (ans+n+k-1)%mod);
+    return 0;
+}
+```
+
+
+## 牛客8_I 并查集
+
+n个回合，每回合给两个数，取过的点不能再取，问最后最多能取多少个点
+
+把每个数离散化，对于同一回合的两个数，把他们并起来。对于一个联通块而言，如果有环则必定可以选中联通块内的全部点（不仅仅是环内，与环相连的也可以全部取到）例：1 2,2 3,3 4,4 1,1 5,1 6,1 7，如果没环，则该块内无论怎么取都有一个点取不到。
+
+```
+#include<bits/stdc++.h>
+using namespace std;
+#define ms(x,y) memset(x,y,sizeof(x))
+const int mxn = 2e5+10;
+const int inf = 0x3f3f3f3f;
+int num[mxn],a[mxn],b[mxn], f[mxn],vis[mxn],cnt[mxn],ct,n;
+map<int,int>id;
+int find(int x)
+{
+	return f[x] == x ? x : f[x] = find(f[x]);
+}
+int main()
+{
+   
+    int T,ca=0;
+    cin>>T;
+    while(T--)
+    {
+        id.clear();
+        ct=0;
+        scanf("%d",&n);
+       
+        for(int i =1;i<=n;i++)
+        {
+            scanf("%d%d",a+i,b+i);
+             
+            if(!id[a[i]])id[a[i]]=++ct;
+             
+            if(!id[b[i]])id[b[i]]=++ct;
+        }
+        for(int i = 1;i<=ct;i++)
+		{
+			f[i]=i;
+			vis[i]=0;
+		} 
+        for(int i = 1;i<=n;i++)
+        {
+        	int aa = find(id[a[i]]),bb=find(id[b[i]]);
+        	
+        	if(aa!=bb)
+        	{
+        		f[bb]=aa;
+        		if(vis[aa]||vis[bb])
+        		{
+        			vis[aa]=1;
+        			vis[bb]=0;
+				}
+			}
+			else vis[aa]=1;//vis表示以该点为根的联通块内有环 
+		}
+		
+        int ans = ct;
+        for(int i=1;i<=ct;i++)if(!vis[i]&&f[i]==i)ans--;
+        printf("Case #%d: %d\n",++ca,ans);
+    }
+    return 0;
+ }
+```
 
 
 ## 签到题记录
